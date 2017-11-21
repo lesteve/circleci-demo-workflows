@@ -62,11 +62,11 @@ jobs:
       - HEROKU_APP: safe-wildwood-45845
     steps:
       - checkout
+      - run: mkdir my-test
+      - run: echo test.txt > my-test/test.txt
       - attach_workspace:
-          at: ~/circleci-demo-workflows
-      - run:
-          name: Dummy
-          command: ls -R ~/circleci-demo-workflows
+          at: my-test/bla
+      - run: ls -R my-test
       - run:
           command: |
             echo 'Done for good'
