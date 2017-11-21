@@ -65,14 +65,11 @@ jobs:
       - attach_workspace:
           at: ~/circleci-demo-workflows
       - run:
-          name: Setup Heroku
-          command: bash .circleci/setup-heroku.sh
+          name: Dummy
+          command: ls -R ~/circleci-demo-workflows
       - run:
           command: |
-            git push heroku workspace-forwarding:master
-            heroku run rake db:migrate
-            sleep 5 # sleep for 5 seconds to wait for dynos
-            heroku restart
+            echo 'Done for good'
 
 workflows:
   version: 2
