@@ -8,15 +8,15 @@ jobs:
       - run: mkdir -p test/subfolder
       - run: echo test > test/subfolder/test.txt
       - persist_to_workspace:
-          root: .
-          paths: test/subfolder
+          root: test/subfolder
+          paths: .
 
   attach:
     docker:
       - image: circleci/ruby:2.4-node
     steps:
       - attach_workspace:
-          at: .
+          at: test/subfolder
       - run: ls -R test
       - run: cat test/subfolder/test.txt
 
