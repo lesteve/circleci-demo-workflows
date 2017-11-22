@@ -1,88 +1,30 @@
 version: 2.0
 
 jobs:
-  bundle_dependencies:
+  persist:
     docker:
       - image: circleci/ruby:2.4-node
-      - image: circleci/postgres:9.4.12-alpine
-    working_directory: ~/circleci-demo-workflows
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/circleci-demo-workflows
-      - restore_cache:
-          keys:
-            - v1-bundle-{{ checksum "Gemfile.lock" }}
-      - run: bundle install --path vendor/bundle
-      - save_cache:
-          key: v1-bundle-{{ checksum "Gemfile.lock" }}
-          paths:
-            - ~/circleci-demo-workflows/vendor/bundle
+      - run: mkdir -p test/subfolder
+      - run: echo test > test/subfolder/test.txt
       - persist_to_workspace:
           root: .
-          paths: vendor/bundle
+          paths: test/subfolder
 
-  rake_test:
+  attach:
     docker:
       - image: circleci/ruby:2.4-node
-      - image: circleci/postgres:9.4.12-alpine
-    working_directory: ~/circleci-demo-workflows
     steps:
-      - checkout
       - attach_workspace:
-          at: ~/circleci-demo-workflows
-      - run: bundle --path vendor/bundle
-      - run: bundle exec rake db:create db:schema:load
-      - run:
-          name: Run tests
-          command: bundle exec rake
-
-  precompile_assets:
-    docker:
-      - image: circleci/ruby:2.4-node
-      - image: circleci/postgres:9.4.12-alpine
-    working_directory: ~/circleci-demo-workflows
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/circleci-demo-workflows
-      - run: bundle --path vendor/bundle
-      - run:
-          name: Precompile assets
-          command: bundle exec rake assets:precompile
-      - persist_to_workspace:
-          root: .
-          paths: public/assets
-
-  deploy:
-    machine:
-        enabled: true
-    working_directory: ~/circleci-demo-workflows
-    environment:
-      - HEROKU_APP: safe-wildwood-45845
-    steps:
-      - checkout
-      - run: mkdir my-test
-      - run: echo test.txt > my-test/test.txt
-      - attach_workspace:
-          at: my-test/bla
-      - run: ls -R my-test
-      - run:
-          command: |
-            echo 'Done for good'
+          at: .
+      - run: ls -R test
+      - run: cat test/subfolder/test.txt
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - bundle_dependencies
-      - rake_test:
+      - persist
+      - attach:
           requires:
-            - bundle_dependencies
-      - precompile_assets:
-          requires:
-            - bundle_dependencies
-      - deploy:
-          requires:
-            - rake_test
-            - precompile_assets
+            - persist
